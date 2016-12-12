@@ -1,0 +1,218 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Using Theano backend.\n"
+     ]
+    }
+   ],
+   "source": [
+    "%matplotlib inline\n",
+    "import numpy as np \n",
+    "import os\n",
+    "import sys\n",
+    "import matplotlib.pyplot as plt\n",
+    "from keras.models import Sequential\n",
+    "from keras.layers import Dense\n",
+    "from keras.layers import GRU"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "8.33980975239 8.33980975239\n"
+     ]
+    }
+   ],
+   "source": [
+    "# fix random seed for reproducibility\n",
+    "np.random.seed(7)\n",
+    "V=np.random.randn(10)\n",
+    "print(V.dot(V), np.linalg.norm(V)**2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "d=10 ##number of measurements per patient per time unit\n",
+    "k=2 ##complexity of the time series\n",
+    "n=200 ## number of patients\n",
+    "T=100 ## amount of time measured for each patient\n",
+    "sigmaw=0.2 ##randomness\n",
+    "#d by d\n",
+    "U=np.random.randn(d,k).dot(np.random.randn(k,d))\n",
+    "betashift=np.random.randn(d)/np.sqrt(d)  ## used to check when we switch to the other time series\n",
+    "#normalized U\n",
+    "A=0.9*U/np.linalg.norm(U,ord=2)\n",
+    "#V is also d by d\n",
+    "V=np.random.randn(d,k).dot(np.random.randn(k,d))\n",
+    "#normalized V\n",
+    "B=0.9*V/np.linalg.norm(V,ord=2)\n",
+    "X = np.zeros((n,d,T)) #this represents n different time series, in d-dimensions, for T time-steps\n",
+    "Y = np.zeros((n,T)) #this represents flag for a patient/time\n",
+    "flag=1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(200, 10, 100)"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "for j in range(n):\n",
+    "    X[j,:,0]=np.random.randn(d)/np.sqrt(d)\n",
+    "    Y[j, 0] = 1\n",
+    "    flag=1\n",
+    "    for i in range(1,T):\n",
+    "        if flag and ((X[j,:,i-1].dot(betashift))>.5): ##if flag was true and we go above a certain threshold, then set flag=0\n",
+    "            flag=0\n",
+    "        ## we can think of flag has flag==1 means not critical, flag==0 means critical\n",
+    "        if flag:\n",
+    "            X[j,:,i]=A.dot(X[j,:,i-1])+sigmaw*np.random.randn(d)\n",
+    "        else:\n",
+    "            X[j,:,i]=B.dot(X[j,:,i-1])+sigmaw*np.random.randn(d)\n",
+    "        Y[j, i] = flag\n",
+    "## X is a n by d by T tensor\n",
+    "## n represents independent trials (think of them as patients or time periods for patients separated)\n",
+    "## T represents the time horizon (how long we observe a patient, for now T is the same for everybody, but we can imagine that changing)\n",
+    "## d is the number of measurements that we have per patient per time."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 1.,  1.,  1., ...,  0.,  0.,  0.],\n",
+       "       [ 1.,  1.,  1., ...,  1.,  1.,  1.],\n",
+       "       [ 1.,  1.,  1., ...,  1.,  1.,  1.],\n",
+       "       ..., \n",
+       "       [ 1.,  1.,  1., ...,  0.,  0.,  0.],\n",
+       "       [ 1.,  1.,  1., ...,  0.,  0.,  0.],\n",
+       "       [ 1.,  1.,  1., ...,  0.,  0.,  0.]])"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "Y"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "ename": "TypeError",
+     "evalue": "can only concatenate tuple (not \"int\") to tuple",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-45-8e243385aff7>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0mmodel\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mSequential\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0madd\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mGRU\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0md\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0mactivation\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'relu'\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0minput_dim\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mn\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mT\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      3\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0madd\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mDense\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcompile\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mloss\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'mean_squared_error'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0moptimizer\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'adam'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mY\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mnb_epoch\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m100\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mbatch_size\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m1\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mverbose\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m2\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/Users/williamcai/anaconda3/lib/python3.5/site-packages/keras/models.py\u001b[0m in \u001b[0;36madd\u001b[0;34m(self, layer)\u001b[0m\n\u001b[1;32m    108\u001b[0m                 \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    109\u001b[0m                     \u001b[0minput_dtype\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;32mNone\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 110\u001b[0;31m                 \u001b[0mlayer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcreate_input_layer\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mbatch_input_shape\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0minput_dtype\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    111\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    112\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mlen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mlayer\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0minbound_nodes\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m!=\u001b[0m \u001b[0;36m1\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/Users/williamcai/anaconda3/lib/python3.5/site-packages/keras/engine/topology.py\u001b[0m in \u001b[0;36mcreate_input_layer\u001b[0;34m(self, batch_input_shape, input_dtype, name)\u001b[0m\n\u001b[1;32m    339\u001b[0m         \u001b[0;31m# and create the node connecting the current layer\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    340\u001b[0m         \u001b[0;31m# to the input layer we just created.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 341\u001b[0;31m         \u001b[0mself\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    342\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    343\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0massert_input_compatibility\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0minput\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/Users/williamcai/anaconda3/lib/python3.5/site-packages/keras/engine/topology.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, x, mask)\u001b[0m\n\u001b[1;32m    456\u001b[0m                                     '`layer.build(batch_input_shape)`')\n\u001b[1;32m    457\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mlen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0minput_shapes\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0;36m1\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 458\u001b[0;31m                 \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mbuild\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0minput_shapes\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    459\u001b[0m             \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    460\u001b[0m                 \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mbuild\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0minput_shapes\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/Users/williamcai/anaconda3/lib/python3.5/site-packages/keras/layers/recurrent.py\u001b[0m in \u001b[0;36mbuild\u001b[0;34m(self, input_shape)\u001b[0m\n\u001b[1;32m    449\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    450\u001b[0m         self.W_z = self.init((input_dim, self.output_dim),\n\u001b[0;32m--> 451\u001b[0;31m                              name='{}_W_z'.format(self.name))\n\u001b[0m\u001b[1;32m    452\u001b[0m         self.U_z = self.inner_init((self.output_dim, self.output_dim),\n\u001b[1;32m    453\u001b[0m                                    name='{}_U_z'.format(self.name))\n",
+      "\u001b[0;32m/Users/williamcai/anaconda3/lib/python3.5/site-packages/keras/initializations.py\u001b[0m in \u001b[0;36mglorot_uniform\u001b[0;34m(shape, name, dim_ordering)\u001b[0m\n\u001b[1;32m     56\u001b[0m \u001b[0;32mdef\u001b[0m \u001b[0mglorot_uniform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mshape\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mname\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;32mNone\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdim_ordering\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;34m'th'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     57\u001b[0m     \u001b[0mfan_in\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfan_out\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mget_fans\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mshape\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdim_ordering\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mdim_ordering\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 58\u001b[0;31m     \u001b[0ms\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msqrt\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;36m6.\u001b[0m \u001b[0;34m/\u001b[0m \u001b[0;34m(\u001b[0m\u001b[0mfan_in\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0mfan_out\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     59\u001b[0m     \u001b[0;32mreturn\u001b[0m \u001b[0muniform\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mshape\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0ms\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mname\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mname\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     60\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mTypeError\u001b[0m: can only concatenate tuple (not \"int\") to tuple"
+     ]
+    }
+   ],
+   "source": [
+    "model = Sequential()\n",
+    "model.add(GRU(d,activation='relu',input_dim=d, input_length=)\n",
+    "model.add(Dense(1))\n",
+    "model.compile(loss='mean_squared_error', optimizer='adam')\n",
+    "model.fit(X, Y, nb_epoch=100, batch_size=1, verbose=2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

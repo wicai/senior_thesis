@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  12 DEC 2016 14:09
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  13 DEC 2016 13:28
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -386,13 +386,30 @@ Non-PDF special ignored!{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/upd
 map/pdftex.map}
 
 ]
+Overfull \hbox (19.84131pt too wide) in paragraph at lines 142--155
+\OT1/cmr/m/n/12 0.159880463551 Ran-dom For-est Re-gres-sor 0.164463405344 Neu-r
+al Net, 512 nodes 0.161696706556
+ []
+
 
 Package Fancyhdr Warning: \headheight is too small (12.0pt): 
  Make it at least 14.49998pt.
  We now make it that large for the rest of the document.
  This may cause the page layout to be inconsistent, however.
 
-[2] (./paper.aux) ) 
+[2]
+Overfull \hbox (13.27888pt too wide) in paragraph at lines 169--179
+[]\OT1/cmr/m/n/12 Zero pre-dic-tor (just guess all-zeros): MSE: 0.168869027809 
+Ran-dom For-est MSE: 0.17058158425
+ []
+
+
+Package Fancyhdr Warning: \headheight is too small (12.0pt): 
+ Make it at least 14.49998pt.
+ We now make it that large for the rest of the document.
+ This may cause the page layout to be inconsistent, however.
+
+[3] (./paper.aux) ) 
 Here is how much of TeX's memory you used:
  4948 strings out of 493014
  69712 string characters out of 6133351
@@ -413,10 +430,10 @@ mr7.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8
 pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.p
 fb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pf
 b>
-Output written on paper.pdf (2 pages, 117825 bytes).
+Output written on paper.pdf (3 pages, 123211 bytes).
 PDF statistics:
- 55 PDF objects out of 1000 (max. 8388607)
- 39 compressed objects within 1 object stream
+ 58 PDF objects out of 1000 (max. 8388607)
+ 41 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

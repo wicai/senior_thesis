@@ -1,5 +1,6 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage{graphicx}
+\usepackage{amsmath}
 
 \usepackage[backend=biber]{biblatex} 
 \addbibresource{data.bib}
@@ -29,18 +30,13 @@ In this paper we present a synthetic time-series dataset which is motivated by v
 
 \section{Introduction}
 
+-> Lot of interesting data is in time series (cite MIMIC)
 
+-> RNNs are really powerful for time series (cite GRAVES, http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
 
+-> Lot of interesting time series have their distributions change at some point (cite DYNACARE)
 
--> Lot of interesting data is in time series
-
--> RNNs are really powerful for time series
-
--> Lot of interesting time series have their distributions change at some point
-
--> e.g. DYNACARE
-
--> Question: Can we use recurrent neural nets to forecast a hazard function?
+-> Question: Can we use recurrent neural nets in time distributions with change points?  
 
 \section{Data}
 Our synthetic data takes the form of a n x T x d matrix where n is the number of patients, T is the number of measurements, and d is the dimensionality of the measurements.  \\
@@ -126,43 +122,156 @@ Interestingly, besides the jump when the random forest is run on windows of leng
 Given a sequence of measurements from time 0 through t, our goal is to predict the value of flag at time t + 1.  
 
 All of these models were trained using the window method, where each training example is a sequence of 10 measurements and the result is the next value of flag.  The dataset was split 80-20 between training/validation.
-\subsubsection{Random Forest Classifier (30 trees, 30 features)}
+
+\subsubsection{Random Forest Classifier (40 trees, 40 features)}
+\begin{center}
+\begin{tabular}{ c c c }
+Window Size & Classification Rate \\
+ 1 & 0.760 \\
+ 5 & 0.818 \\
+ 9 & 0.803\\
+ 13 &  0.794\\
+ 17 & 0.788 
+\end{tabular}
+\end{center}
+Confusion matrices for window size 1, 5, 9, 13, 17 respectively.  
+\[
+  \begin{bmatrix}
+  5121 & 362 \\
+  1307 & 170\\
+  \end{bmatrix} 
+  \begin{bmatrix}
+5295  & 32 \\
+1205 & 268 \\
+   \end{bmatrix}
+  \begin{bmatrix}
+5156  & 15\\
+1292 & 177\\
+   \end{bmatrix}
+  \begin{bmatrix}
+4994  & 21\\
+1310 & 155\\
+   \end{bmatrix}
+  \begin{bmatrix}
+4839  & 20\\
+1318 & 143\\
+   \end{bmatrix}
+\]
 
 \subsubsection{Neural Network (1 layer, 512 nodes) }
 
-\subsubsection{Deep Neural Network}
+\begin{center}
+\begin{tabular}{ c c c }
+Window Size & Classification Rate \\
+ 1 & 0.791 \\
+ 5 & 0.917 \\
+ 9 & 0.948 \\
+ 13 &0.954 \\
+ 17 &0.957 \\
+\end{tabular}
+\end{center}
+Confusion matrices for window size 1, 5, 9, 13, 17 respectively.  
+\[
+  \begin{bmatrix}
+  5355  &128\\
+ 1325  &152 \\
+  \end{bmatrix} 
+  \begin{bmatrix}
+  [[5107 & 220] \\
+ [ 346 &1127]] \\
+   \end{bmatrix}
+  \begin{bmatrix}
+  5035 & 136 \\
+ 207 &1262 \\
+   \end{bmatrix}
+  \begin{bmatrix}
+4903  &112 \\
+ 184 &1281\\
+   \end{bmatrix}
+  \begin{bmatrix}
+4790  & 69 \\
+199 &1262 \\
+   \end{bmatrix}
+\]
 
+\subsubsection{Deep Neural Network}
+\begin{center}
+\begin{tabular}{ c c c }
+
+Window Size & Classification Rate \\
+ 1 & 0.794 \\
+ 5 & 0.907 \\
+ 9 & 0.945 \\
+ 13 & 0.951 \\
+ 17 &0.956 \\
+\end{tabular}
+\end{center}
+Confusion matrices for window size 1, 5, 9, 13, 17 respectively.  
+\[
+  \begin{bmatrix}
+5382 & 101 \\
+1329  &148 \\
+  \end{bmatrix} 
+  \begin{bmatrix}
+4985  & 342\\
+290 & 1183\\
+   \end{bmatrix}
+  \begin{bmatrix}
+4994  &177\\
+189  &1280\\
+   \end{bmatrix}
+  \begin{bmatrix}
+4905 & 110\\
+209 & 1256\\
+   \end{bmatrix}
+  \begin{bmatrix}
+4773  & 86\\
+190  &1271\\
+   \end{bmatrix}
+\]
 \subsubsection{Recurrent Neural Network, window method}
 
-\subsubsection{Recurrent Neural Network, stateful}
+\begin{center}
+\begin{tabular}{ c c c }
 
-\subsubsection{Results}
-Random Forest 
+Window Size & Classification Rate \\
+ 1 & 0.792 \\
+ 5 & 0.895 \\
+ 9 & 0.951 \\
+ 13 &0.959\\
+ 17 & 0.971\\
 
-[[5104   28] 
+\end{tabular}
+\end{center}
+Confusion matrices for window size 1, 5, 9, 13, 17 respectively.  
+\[
+  \begin{bmatrix}
+5363 & 120\\
+1327  &150\\ 
+   \end{bmatrix}
+     \begin{bmatrix}
+4861  & 466 \\
+245 & 1228 \\
+   \end{bmatrix}
+     \begin{bmatrix}
+5102  & 69 \\
+256 & 1213 \\
+   \end{bmatrix}
+     \begin{bmatrix}
+4942 &  73 \\
+192  & 1273 \\
+   \end{bmatrix}
+     \begin{bmatrix}
+4760  & 99\\
+82 & 1379 \\
+   \end{bmatrix}
+\]
 
- [1271  197]] 
- 
-Neural Net, 512 nodes
+\subsubsection{Comparison}
+\includegraphics[height=400px, width=1.1\textwidth]{len_sequence_v_accuracy_classification}
+Unlike in the regression problem, all three of the neural net model are able to increase their accuracy as the training window is increased.  The random forest is still unable to effectively make use of the new data however.  Again, the recurrent neural network performs better than the other two neural nets as we increase the window size, which we attribute to the fact that it's inherently designed to capture temporal relationships.  
 
-[[5009  123]
-
- [ 196 1272]]
-
-Deep Neural Net, 2 layers of 512 nodes
-
-[[5011  121]
-
- [ 212 1256]]
- 
-Recurrent Neural Net 
-
-[[4965  167]
-
- [ 148 1320]]
- 
-\section{Discussion}
-
-\printbibliography
+\section{Acknowledgements}
+I would like to thank Sahand for suggesting the interesting project and giving me advice.
 
  \end{document}

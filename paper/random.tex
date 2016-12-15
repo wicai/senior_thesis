@@ -1,82 +1,8 @@
-% ***********************************************************
-% ******************* PHYSICS HEADER ************************
-% ***********************************************************
-% Version 2
-\documentclass[12pt]{article}
-\usepackage{listings}
-\usepackage{amsmath} % AMS Math Package
-\usepackage{amsthm} % Theorem Formatting
-\usepackage{amssymb}    % Math symbols such as \mathbb
-\usepackage{graphicx} % Allows for eps images
-\usepackage[dvips,letterpaper,margin=1in,bottom=0.7in]{geometry}
-\usepackage{tensor}
- % Sets margins and page size
-\usepackage{amsmath}
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\renewcommand{\labelenumi}{(\alph{enumi})} % Use letters for enumerate
-% \DeclareMathOperator{\Sample}{Sample}
-\let\vaccent=\v % rename builtin command \v{} to \vaccent{}
-\usepackage{enumerate}
-\renewcommand{\v}[1]{\ensuremath{\mathbf{#1}}} % for vectors
-\newcommand{\gv}[1]{\ensuremath{\mbox{\boldmath$ #1 $}}} 
-% for vectors of Greek letters
-\newcommand{\uv}[1]{\ensuremath{\mathbf{\hat{#1}}}} % for unit vector
-\newcommand{\abs}[1]{\left| #1 \right|} % for absolute value
-\newcommand{\avg}[1]{\left< #1 \right>} % for average
-\let\underdot=\d % rename builtin command \d{} to \underdot{}
-\renewcommand{\d}[2]{\frac{d #1}{d #2}} % for derivatives
-\newcommand{\dd}[2]{\frac{d^2 #1}{d #2^2}} % for double derivatives
-\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}} 
-% for partial derivatives
-\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}} 
-% for double partial derivatives
-\newcommand{\pdc}[3]{\left( \frac{\partial #1}{\partial #2}
- \right)_{#3}} % for thermodynamic partial derivatives
-\newcommand{\ket}[1]{\left| #1 \right>} % for Dirac bras
-\newcommand{\bra}[1]{\left< #1 \right|} % for Dirac kets
-\newcommand{\braket}[2]{\left< #1 \vphantom{#2} \right|
- \left. #2 \vphantom{#1} \right>} % for Dirac brackets
-\newcommand{\matrixel}[3]{\left< #1 \vphantom{#2#3} \right|
- #2 \left| #3 \vphantom{#1#2} \right>} % for Dirac matrix elements
-\newcommand{\grad}[1]{\gv{\nabla} #1} % for gradient
-\let\divsymb=\div % rename builtin command \div to \divsymb
-\renewcommand{\div}[1]{\gv{\nabla} \cdot \v{#1}} % for divergence
-\newcommand{\curl}[1]{\gv{\nabla} \times \v{#1}} % for curl
-\let\baraccent=\= % rename builtin command \= to \baraccent
-\renewcommand{\=}[1]{\stackrel{#1}{=}} % for putting numbers above =
-\providecommand{\wave}[1]{\v{\tilde{#1}}}
-\providecommand{\fr}{\frac}
-\providecommand{\RR}{\mathbb{R}}
-\providecommand{\NN}{\mathbb{N}}
-\providecommand{\seq}{\subseteq}
-\usepackage{mathtools}
-\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
-\providecommand{\e}{\epsilon}
-\newtheorem{prop}{Proposition}
-\newtheorem{thm}{Theorem}[section]
-\newtheorem{axiom}{Axiom}[section]
-\newtheorem{p}{Problem}[section]
-\usepackage{cancel}
-\newtheorem*{lem}{Lemma}
-\theoremstyle{definition}
-\newtheorem*{dfn}{Definition}
- \newenvironment{s}{%\small%
-        \begin{trivlist} \item \textbf{Solution}. }{%
-            \hspace*{\fill} $\blacksquare$\end{trivlist}}%
-\newcommand{\twopartdef}[4]
-{
-	\left\{
-		\begin{array}{ll}
-			#1 & \mbox{if } #2 \\
-			#3 & \mbox{if } #4
-		\end{array}
-	\right.
-}
-\setlength\parindent{0pt}	
-% ***********************************************************
-% ********************** END HEADER *************************
-% ***********************************************************
+\documentclass[12pt,a4paper]{article}
+\usepackage{graphicx}
+
+\usepackage[backend=biber]{biblatex} 
+\addbibresource{data.bib}
 
 \begin{document}
 \begin{titlepage}
@@ -97,12 +23,15 @@
 % Bottom of the page
 	{\large \today\par}
 \end{titlepage}
-
 \begin{abstract}
 In this paper we present a synthetic time-series dataset which is motivated by vital measurements for patients in the ICU (MIMIC).  At time zero, the time series moves according to one probability distribution.  We then have some criterion (motivated by events such as cardiac arrest), which a fraction of the generated examples trigger, causing the probability distribution to change for the remainder of the time series.  We then try to solve the problems of regression, predicting what the next measurement will be, and classification, predicting which generation function is currently generating the data, on this dataset.  The models we consider include a random forest, single-layer perceptron, deep neural network, and a recurrent neural network.  We give a comparison of the capability of these models to do this kind of change point analysis, and also consider their robustness in the face of missing data.  
 \end{abstract}
 
 \section{Introduction}
+
+
+
+
 -> Lot of interesting data is in time series
 
 -> RNNs are really powerful for time series
@@ -144,52 +73,59 @@ We used a two layer perceptron where each layer consisted of 512 nodes using the
 We used a 16 node Gated Recurrent Unit using the rectified linear unit (ReLU) activator which fed into a perceptron with 128 nodes and a dropout of .5 which also used the rectified linear unit (ReLU) activator.  Again, for regression this feeds into a layer of d nodes and for classification it feeds into a single node which is converted to a classification using the sigmoid activation.  
 
 \section{Experiment}
-There are two prediction problems we are interested in: \\
+There are two prediction problems we are interested in: 
 
-1) Given $P_0$ through $P_t$, predict $P_{t+1}$ (regression). \\
+1) Given $P_0$ through $P_t$, predict $P_{t+1}$ (regression). 
+
 2) Given $P_0$ through $P_t$, predict $1_A$ (binary classification) 
 
 \subsection{Regression}
-Given a time series of measurements, we would like to be able to predict what the next measurement will be.  First, we give a brief description of a variety of models that we implemented to solve this task.  All of these models use a fixed window of measurements as an input (i.e. the x previous measurements).  For this entire section, we let the dimensionality $d$ of the data be 10, the number of timesteps per patient $T$ to be 175, and the number of patients N to be 200.   For each model, we give a brief description of the model and show the model's predictions for a patient in the validation set.  Then, at the end of this section, we give a comparison of the models over various values of x, as described previously.  
+Given a time series of measurements, we would like to be able to predict what the next measurement will be.  For this entire section, we let the dimensionality $d$ of the data be 10, the number of timesteps per patient $T$ be 175, and the number of patients $N$ to be 200.   First, we see how the models perform in the absence of the change point as a baseline.  Then, we see how the models perform on the data which has change points. For each model, we show the model's predictions for a patient in the validation set and give the best MSE achieved by that model.  Then, at the end of this section, we give a comparison of the models over various values of window size $x$.  
 
-\subsection{Regression Baseline}
+\subsection{Regression Baseline (no change points)}
 As a baseline, we check to see how our models work when A = B, or in other words, the patient measurements are generated by: 
 $$P_{t+1} = AP_{t} + \sigma_w \epsilon$$
-In this case, the 'correct' model should predict $P_{t + 1} = AP_t$.  
+In this case, the 'correct' model should predict $P_{t + 1} = AP_t$.  We can actually calculate the MSE that this model would give, which comes out to 0.1599351.  
 
 \subsubsection{Random Forest Regression}
 \includegraphics[height=200px, width=1\textwidth]{tree_regression_projection_a_eq_b}
+MSE: 0.163457677349 \\
 \subsubsection{Neural Network}
 \includegraphics[height=200px, width=1\textwidth]{nn_regression_projection_a_eq_b}
+MSE: 0.160142227167 \\
 \subsubsection{Deep Neural Network}
 \includegraphics[height=200px, width=1\textwidth]{deep_nn_regression_projection_a_eq_b}
+MSE: 0.160053838298 \\
 \subsubsection{Recurrent Neural Network, window method}
 \includegraphics[height=200px, width=1\textwidth]{window_rnn_regression_projection_a_eq_b}
-\subsection{Regression}
+MSE: 0.159979021872 \\
+
+\subsection{Regression (with change points)}
+
+\subsubsection{Random Forest Regression}
+\includegraphics[height=200px, width=1\textwidth]{tree_regression_projection_a_neq_b}
+We used scikit-learn's RandomForestRegressor, trained with 40 estimators and features, except when we were using a sequence length of 1, in which case we only used 10.  
+
+\subsubsection{Neural Network}
+\includegraphics[height=200px, width=1\textwidth]{nn_regression_projection_a_neq_b}
+We used a single layer perceptron with 512 nodes using the rectified linear unit (ReLU) activator, with a dropout of .25.  
+
+\subsubsection{Deep Neural Network}
+\includegraphics[height=200px, width=1\textwidth]{deep_nn_regression_projection_a_neq_b}
+We used a two layer perceptron where each layer consisted of 512 nodes using the rectified linear unit (ReLU) activator, with a dropout of .25.  
+
+\subsubsection{Recurrent Neural Network, window method}
+\includegraphics[height=200px, width=1\textwidth]{window_rnn_regression_projection_a_neq_b}
+We used a 16 node Gated Recurrent Unit using the rectified linear unit (ReLU) activator which fed into a perceptron with 128 nodes and a dropout of .5 which also used the rectified linear unit (ReLU) activator.  
 
 \subsubsection{Comparison}
 \includegraphics[height=400px, width=1.1\textwidth]{len_sequence_v_MSE}
 Interestingly, besides the jump when the random forest is run on windows of length 5 instead of windows of length 1, every one of the non-recurrent models does worse as we increase the window size.  This suggests that the models struggle to train on the additional information that they are learning on.  However, the recurrent neural network's error monotonically decreases as we increase the window size - this demonstrates the power of recurrent neural nets in learning temporal associations.  
 
-\subsection{Random Forest Regression}
-\includegraphics[height=200px, width=1\textwidth]{tree_regression_projection_a_neq_b}
-We used scikit-learn's RandomForestRegressor, trained with 40 estimators and features, except when we were using a sequence length of 1, in which case we only used 10.  
-
-\subsection{Neural Network}
-\includegraphics[height=200px, width=1\textwidth]{nn_regression_projection_a_neq_b}
-We used a single layer perceptron with 512 nodes using the rectified linear unit (ReLU) activator, with a dropout of .25.  
-
-\subsection{Deep Neural Network}
-\includegraphics[height=200px, width=1\textwidth]{deep_nn_regression_projection_a_neq_b}
-We used a two layer perceptron where each layer consisted of 512 nodes using the rectified linear unit (ReLU) activator, with a dropout of .25.  
-
-\subsection{Recurrent Neural Network, window method}
-\includegraphics[height=200px, width=1\textwidth]{window_rnn_regression_projection_a_neq_b}
-We used a 16 node Gated Recurrent Unit using the rectified linear unit (ReLU) activator which fed into a perceptron with 128 nodes and a dropout of .5 which also used the rectified linear unit (ReLU) activator.  
-
-
 \subsection{Classification}
+Given a sequence of measurements from time 0 through t, our goal is to predict the value of flag at time t + 1.  
 
+All of these models were trained using the window method, where each training example is a sequence of 10 measurements and the result is the next value of flag.  The dataset was split 80-20 between training/validation.
 \subsubsection{Random Forest Classifier (30 trees, 30 features)}
 
 \subsubsection{Neural Network (1 layer, 512 nodes) }
@@ -200,76 +136,6 @@ We used a 16 node Gated Recurrent Unit using the rectified linear unit (ReLU) ac
 
 \subsubsection{Recurrent Neural Network, stateful}
 
-\section{Experiment}
-\subsection{Regression where $A = B$}
-\subsubsection{Results}
-Models:
-
-All Zero Regressor:
-
-0.168840895246
-
-Oracle Regressor (knows the value of A):
-
-0.159880463551
-
-Random Forest Regressor 
-
-0.164463405344
-
-Neural Net, 512 nodes
-
-0.161696706556
-
-Deep Neural Net, 2 layers of 512 nodes
-
-0.160718555103
-
-Recurrent Neural Net 
-
-0.160057111654
-
-\subsection{Regression where $A \neq B$}
-\subsubsection{Introduction}
-Given a sequence of measurements from time 0 to 1, our goal is to predict the measurement at time t + 1.  Now that $A \neq B$, our data is generated by 
-
-$$P_{t+1} = (1_AA+(1-1_A)B)P_{t} + \sigma_w \epsilon$$
-
-which means our models have to deal with the fact that sometimes the data is being generated with A and sometimes with B.  
-
-All of these models were trained using the window method, where each training example is a sequence of 10 measurements and the result is the next measurement.  The dataset was split 80-20 between training/validation.
-\subsubsection{Results}
-
-Models:
-
-Zero predictor (just guess all-zeros):
-
-MSE: 0.168869027809
-
-Random Forest 
-
-MSE: 0.17058158425
-
-Neural Net, 512 nodes
-
-MSE: 0.161847476813
-
-Deep Neural Net, 2 layers of 512 nodes
-
-MSE: 0.160740647684
-
-Recurrent Neural Net 
-
-MSE: 0.161418953358
-
-The error of an oracle predictor which knows the value of A, B and flag should be similar to the error from the previous section but wasn't implemented because it's hard to figure out the value of flag for a given training example.  
-
-
-\subsection{Classification where $A \neq B$}
-\subsubsection{Introduction}
-Given a sequence of measurements from time 0 through t, our goal is to predict the value of flag at time t + 1.  
-
-All of these models were trained using the window method, where each training example is a sequence of 10 measurements and the result is the next value of flag.  The dataset was split 80-20 between training/validation.
 \subsubsection{Results}
 Random Forest 
 
@@ -297,8 +163,6 @@ Recurrent Neural Net
  
 \section{Discussion}
 
+\printbibliography
 
  \end{document}
- 
-
-
